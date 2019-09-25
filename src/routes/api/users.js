@@ -59,7 +59,7 @@ router.post("/register", (req, res) => {
     
     User.findOne({ username: req.body.username }).then(user => {
       if (user) {
-        return res.status(400).json({ username: "Username already exists" });
+        return res.status(400).json({ usernamer: "Username already exists" });
        } else {
             const newUser = new User({
             
@@ -78,6 +78,7 @@ router.post("/register", (req, res) => {
                         .catch(err => console.log(err));
                 });
             });
+     
         }
     });
 });

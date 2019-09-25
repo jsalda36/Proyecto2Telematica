@@ -1,7 +1,6 @@
 
 import React, { Component } from 'react'
 
-import {withRouter} from 'react-router-dom';
 class Signin extends Component {
    
     constructor(props) {
@@ -49,7 +48,7 @@ class Signin extends Component {
     
     login = (e) =>{
         e.preventDefault();
-
+        console.log("en login")
         var json = {
             'username':this.state.username,
             'password': this.state.password
@@ -120,25 +119,36 @@ class Signin extends Component {
           })
             .then(res => res.json())
             .then(data => {
-                var string ="";
-                if (data.username!=undefined){string=string.concat(data.username)}
-                if (data.password!=undefined){string=string.concat(data.password)}
-                if (data.password2!=undefined){string=string.concat(data.password2)}
+                console.log(data)
+                if (!data.usernamer){ 
 
-                this.setState({errorr:string});
-                if(data._id!=undefined){
-                    this.props.history.push({
-                        pathname: '/',
-                        state: { username: this.state.usernamer,
-                                  }
-                          })
+                    if (!data.passwordr){
+                        
+                            if (!data.password2r){
+
+                               this.setState({username:this.state.usernamer, password:this.state.passwordr1})
+                               this.login(e);
+
+                            }else{
+                                this.setState({errorr:data.password2r});
+                            }
+
+                    }else{
+                        this.setState({errorr:data.passwordr});
+                    }
+
+                }else{
+                    this.setState({errorr:data.usernamer});
                 }
+
+               
             })
             .catch(err => console.error(err));
         }
     
   
     render(){
+        
         
         return (
             <div className="row m-2 p-2 float-center">
