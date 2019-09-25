@@ -5,20 +5,32 @@ class Dashboard extends Component {
 
     constructor(props) {
         super(props);
-        this.state = {
-            username: props.location.state.username,
-            topics:[],
-            comments:[],
-            commentsid: []
-           
+  
+            this.state = {
+                username: "",
+                topics:[],
+                comments:[],
+                commentsid: []
+            
+            }
+
+    }
+        
+    
+    componentDidMount = () => {
+       
+        if(this.props.location.state==undefined){
+            
+                this.props.history.push('/login');
         }
+        else{
+            this.setState({username:this.props.location.state.username});
+        }
+        this.fetchData();
         
     }
-    componentDidMount = () => this.fetchData();
-    
-    
     fetchData = () => {
-        console.log("in fet");
+        
         fetch('/api/topics')
           .then(res => res.json())
           .then(data => {
@@ -37,7 +49,7 @@ class Dashboard extends Component {
           })
           this.setState({commentsid:temp})
 
-          console.log(this.state.commentsid)
+          
     }
 
 

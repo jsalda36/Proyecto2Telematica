@@ -7,10 +7,10 @@ import { Route, Link, BrowserRouter as Router } from 'react-router-dom';
 class Posting extends Component {
 
   constructor(props) {
-    console.log(props)
+    
     super();
     this.state = {
-      username: props.location.state.username,
+      username: '',
       title: '',
       description: '',
       date: '',
@@ -103,6 +103,13 @@ class Posting extends Component {
   }
 
   componentDidMount() {
+    if(this.props.location.state==undefined){
+            
+      this.props.history.push('/login');
+    }
+    else{
+      this.setState({username:this.props.location.state.username});
+    }
     this.fetchTopics();
   }
 
