@@ -14,19 +14,56 @@ class Dashboard extends Component {
             
             }
 
+
+    }
+    logout = () =>{
+        localStorage.clear()
     }
         
     
     componentDidMount = () => {
        
-        if(this.props.location.state==undefined){
+        if(localStorage.getItem('token')){
             
-                this.props.history.push('/login');
+            fetch('/api/users/validatetoken', {
+                    method: 'POST',
+                    body: JSON.stringify({token:localStorage.getItem('token')}),
+                    headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                    }
+                 })
+                .then(res => res.json())
+                .then(data => {
+                    
+                    if (data.error){
+                        this.props.history.push('/login')
+                    }
+                    else{
+                        fetch('/api/users/getuser', {
+                            method: 'POST',
+                            body: JSON.stringify({id:data.id}),
+                            headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                            }
+                         })
+                        .then(resp => resp.json())
+                        .then(dato => {
+                            this.setState({username:dato.username})
+                            console.log(dato.username)
+                        })
+                        .catch(err => console.error(err));
+                        
+                        this.fetchData();
+                    }
+                })
+                .catch(err => console.error(err));
+        }else{
+            this.props.history.push('/login')
         }
-        else{
-            this.setState({username:this.props.location.state.username});
-        }
-        this.fetchData();
+
+        
         
     }
     fetchData = () => {
@@ -35,13 +72,13 @@ class Dashboard extends Component {
           .then(res => res.json())
           .then(data => {
             this.setState({topics: data});
-            
+            console.log("topics", data)
           });
         fetch('/api/comments')
           .then(res => res.json())
           .then(data => {
             this.setState({comments: data});
-            
+            console.log("comments", data)
           });
 
           var temp = this.state.topics.map((value,index)=>{
@@ -106,28 +143,7 @@ class Dashboard extends Component {
                 });
 
                 return <div>
-                    <nav className="navbar navbar-expand-md navbar-dark bg-dark">
-                <div className="col-11">
-                    <ul class="nav nav-tabs">
-                        <li class="nav-item">
-                            <a class="nav-link active" href="/">Dashboard</a>
-                        </li>
                         
-                        <li class="nav-item">
-                        <Link to={{
-                         pathname: '/posting',
-                                state: {
-                                username: this.state.username
-                                }
-                                }}>Make Posts</Link>
-                        </li>
-
-                    </ul>
-                </div>
-                <div className="col-4">
-                    <a href="">Log Out</a>
-                </div>
-            </nav>
                     <div className="card p-1 m-4">
                         <div className="card-body">
                             <h4 className="card-title text-center">{value["title"]}</h4>
@@ -162,6 +178,28 @@ class Dashboard extends Component {
 
         return (
             <div className="row">
+                <nav className="navbar navbar-expand-md navbar-dark bg-dark">
+                         <div className="col-11">
+                            <ul class="nav nav-tabs">
+                                <li class="nav-item">
+                                    <a class="nav-link active" href="/">Dashboard</a>
+                                </li>
+                        
+                                <li class="nav-item">
+                                    <Link to={{
+                                    pathname: '/posting',
+                                            state: {
+                                            username: this.state.username
+                                            }
+                                            }}>Make Posts</Link>
+                                </li>
+
+                                </ul>
+                            </div>
+                            <div className="col-4">
+                                <a onClick={this.logout} href="/login">Log Out</a>
+                            </div>
+                        </nav>
                 <div className="col-sm-10 mx-auto">
                     {cards}
                 </div>

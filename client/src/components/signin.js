@@ -21,9 +21,35 @@ class Signin extends Component {
     }
 
     onChange = e =>  this.setState({ [e.target.id] : e.target.value });
-        
+    
+    
+   
+    componentDidMount = () => {
+       
+        if(localStorage.getItem('token')){
+            fetch('/api/users/validatetoken', {
+                    method: 'POST',
+                    body: JSON.stringify({token:localStorage.getItem('token')}),
+                    headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                    }
+                 })
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.error){
+
+
+                        this.props.history.push('/')
+                    }
+                })
+                .catch(err => console.error(err));
+        }
+    }
+    
     login = (e) =>{
         e.preventDefault();
+
         var json = {
             'username':this.state.username,
             'password': this.state.password
@@ -39,23 +65,38 @@ class Signin extends Component {
           })
             .then(res => res.json())
             .then(data => {
-
+                console.log(data.token)
+                localStorage.setItem('token', data.token);
+              
                 
-                var string ="";
-                if (data.username!=undefined){string=string.concat(data.username);console.log(string);}
-                if (data.password!=undefined){string=string.concat(data.password)}
-                if (data.usernamenotfound!=undefined){string=string.concat(data.usernamenotfound)}
-                if (data.passwordincorrect!=undefined){string=string.concat(data.passwordincorrect)}
+                if (!data.username){ 
 
-                this.setState({errorl:string});
-                if(string.length==0){
-                    
-                    this.props.history.push({
-                        pathname: '/',
-                        state: { username: this.state.username,
-                                  }
-                          })
+                    if (!data.password){
+                        
+                        if (!data.usernamenotfound){
+                            
+                            if (!data.passwordincorrect){
+
+                                this.props.history.push('/')
+
+                            }else{
+                                this.setState({errorl:data.passwordincorrect});
+                            }
+
+                        }
+                        else{
+                            this.setState({errorl:data.usernamenotfound});
+                        }
+
+                    }else{
+                        this.setState({errorl:data.password});
+                    }
+
+                }else{
+                    this.setState({errorl:data.username});
                 }
+                
+            
             })
             .catch(err => console.error(err));
         }

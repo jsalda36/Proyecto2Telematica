@@ -17,7 +17,35 @@ router.get('/', async (req,res) => {
     res.json(users);
     
 })
+router.post('/getuser', async (req, res) => {
+    const user = await User.findById(req.body.id);
+    res.json(user);
+  });
 
+router.post("/validatetoken",(req,res)=>{
+    
+    if (req.body.token) {
+        
+        const token = req.body.token.split(' ')[1]; 
+
+        try {
+            var decoded = jwt.verify(token, 'secret', {expiresIn: 650});
+            
+            return res.status(200).json(decoded)
+            
+          } catch(err) {
+            return res.status(401).json({error: "Token has expired"})
+            
+          }
+
+    }
+    else{
+  
+          return res.status(401).json({ error: "Authentication error. Token required" });
+      
+    }
+
+})
 
 router.post("/register", (req, res) => {
     
@@ -90,7 +118,8 @@ router.post("/login", (req, res) => {
                     (err, token) => {
                         res.json({
                             success: true,
-                            token: "Bearer " + token
+                            token: "Bearer " + token,
+                            user: username
                         });
                     }
                 );

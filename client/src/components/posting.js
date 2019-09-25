@@ -8,7 +8,7 @@ class Posting extends Component {
 
   constructor(props) {
     
-    super();
+    super(props);
     this.state = {
       username: '',
       title: '',
@@ -18,7 +18,7 @@ class Posting extends Component {
       topics: []
     };
     this.handleChange = this.handleChange.bind(this);
-    this.addTask = this.addTask.bind(this);
+    this.addTopic = this.addTopic.bind(this);
   }
 
   handleChange(e) {
@@ -28,12 +28,13 @@ class Posting extends Component {
     });
   }
 
-  addTask(e) {
+  addTopic(e) {
     e.preventDefault();
     if(this.state._id) {
       fetch(`/api/topics/${this.state._id}`, {
         method: 'PUT',
         body: JSON.stringify({
+          username: this.state.username,
           title: this.state.title,
           description: this.state.description,
           date: this.state.date
@@ -50,10 +51,16 @@ class Posting extends Component {
           this.fetchTopics();
         });
     } else {
-
+      var da = (new Date()).toLocaleString();
+     
       fetch('/api/topics', {
         method: 'POST',
-        body: JSON.stringify(this.state),
+        body: JSON.stringify({
+          username: this.state.username,
+          title: this.state.title,
+          description: this.state.description,
+          date: da
+        }),
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
@@ -103,14 +110,50 @@ class Posting extends Component {
   }
 
   componentDidMount() {
-    if(this.props.location.state==undefined){
-            
-      this.props.history.push('/login');
+    
+    if(localStorage.getItem('token')){
+      fetch('/api/users/validatetoken', {
+              method: 'POST',
+              body: JSON.stringify({token:localStorage.getItem('token')}),
+              headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+              }
+           })
+          .then(res => res.json())
+          .then(data => {
+              if (data.error){
+                  this.props.history.push('/login')
+              }
+              else{
+                fetch('/api/users/getuser', {
+                  method: 'POST',
+                  body: JSON.stringify({id:data.id}),
+                  headers: {
+                  'Accept': 'application/json',
+                  'Content-Type': 'application/json'
+                  }
+               })
+              .then(resp => resp.json())
+              .then(dato => {
+                  this.setState({username:dato.username})
+                  console.log(dato.username)
+              })
+              .catch(err => console.error(err));
+                  this.fetchTopics();
+              }
+          })
+          .catch(err => console.error(err));
     }
     else{
-      this.setState({username:this.props.location.state.username});
-    }
-    this.fetchTopics();
+      this.props.history.push('/login')
+  }
+
+    
+  }
+  logout = () =>{
+    localStorage.clear()
+    
   }
 
   fetchTopics() {
@@ -145,7 +188,7 @@ class Posting extends Component {
                     </ul>
                 </div>
                 <div className="col-4">
-                    <a href="">Log Out</a>
+                    <a onClick={this.logout} href="/login">Log Out</a>
                 </div>
             </nav>
         <div className="container">
@@ -153,7 +196,7 @@ class Posting extends Component {
             <div className="col s5">
               <div className="card">
                 <div className="card-content">
-                  <form onSubmit={this.addTask}>
+                  <form onSubmit={this.addTopic}>
                     <div className="row">
                       <div className="input-field col s12">
                         <input name="title" onChange={this.handleChange} value={this.state.title} type="text" placeholder="Task Title" autoFocus/>
